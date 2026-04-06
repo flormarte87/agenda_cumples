@@ -243,8 +243,8 @@ const analyzeWithGemini = async (imageBase64, apiKey) => {
   const [meta, data] = imageBase64.split(',');
   const mimeType = meta.split(':')[1].split(';')[0];
   
-  // Usamos v1beta y el modelo 1.5-flash que es el más estable en Uruguay
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+  // URL con el nombre de modelo EXACTO que pide v1beta
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
 
   const response = await fetch(url, {
     method: 'POST',
@@ -253,7 +253,7 @@ const analyzeWithGemini = async (imageBase64, apiKey) => {
       contents: [{
         parts: [
           { inline_data: { mime_type: mimeType, data: data } },
-          { text: "Analizá esta invitación. Respondé ÚNICAMENTE con este JSON (sin markdown): {\"title\":\"\",\"date\":\"YYYY-MM-DD\",\"timeFrom\":\"HH:MM\",\"timeTo\":\"HH:MM\",\"location\":\"\",\"notes\":\"\"}" }
+          { text: "Analizá esta invitación y extraé los datos en JSON puro: {\"title\":\"\",\"date\":\"YYYY-MM-DD\",\"timeFrom\":\"HH:MM\",\"timeTo\":\"HH:MM\",\"location\":\"\",\"notes\":\"\"}" }
         ]
       }]
     })
@@ -261,7 +261,7 @@ const analyzeWithGemini = async (imageBase64, apiKey) => {
 
   if (!response.ok) {
     const errorJson = await response.json();
-    throw new Error(errorJson?.error?.message || "Error en la conexión");
+    throw new Error(errorJson?.error?.message || "Error de conexión");
   }
 
   const resData = await response.json();
@@ -269,7 +269,6 @@ const analyzeWithGemini = async (imageBase64, apiKey) => {
   text = text.replace(/```json/g, "").replace(/```/g, "").trim();
   return JSON.parse(text);
 };
-
 const genWAMessage = ev => {
   const phone = S.settings.myPhone||'';
   const ref = `${ev.title} (${fmtShort(ev.date)})`;
