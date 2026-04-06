@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>🎉 Agenda Familiar</title>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#ede8f8;min-height:100vh;color:#1a1a2e}
+#root{max-width:480px;margin:0 auto;min-height:100vh;background:#f4f0ff;position:relative}
+/* header */
+.hdr{background:linear-gradient(135deg,#6d28d9,#a855f7);color:white;padding:13px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 14px rgba(109,40,217,.35)}
+.hdr-left{display:flex;align-items:center;gap:10px}
+.hdr-logo{font-size:1.7rem;line-height:1}
+.hdr-title{font-size:1.08rem;font-weight:800}
+.hdr-sub{font-size:.66rem;opacity:.82}
+.icon-btn{background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.4);color:white;border-radius:50%;width:34px;height:34px;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+/* tabs */
+.tabs{display:flex;background:white;border-bottom:1px solid #e0d9f7;position:sticky;top:62px;z-index:99;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.tab{flex:1;padding:9px 6px 7px;border:none;background:none;font-size:.68rem;font-weight:700;color:#a0aec0;cursor:pointer;border-bottom:2.5px solid transparent;text-align:center}
+.tab.active{color:#6d28d9;border-bottom-color:#6d28d9}
+.tab-icon{display:block;font-size:1.1rem;margin-bottom:2px}
+/* content */
+.content{padding:14px;padding-bottom:90px}
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.stat{background:white;border-radius:14px;padding:11px 8px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.stat-n{font-size:1.6rem;font-weight:900;line-height:1}
+.stat-l{font-size:.6rem;color:#9ca3af;font-weight:700;text-transform:uppercase;margin-top:3px}
+/* today banner */
+.today-banner{background:linear-gradient(135deg,#6d28d9,#db2777);color:white;border-radius:16px;padding:14px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px}
+/* section header */
+.sec-hdr{font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:#a0aec0;margin:18px 0 9px;display:flex;align-items:center;gap:8px}
+.sec-hdr::after{content:'';flex:1;height:1px;background:#e5e7eb}
+/* event card */
+.ecard{background:white;border-radius:16px;margin-bottom:12px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.07)}
+.ecard-top{display:flex;align-items:stretch}
+.ecard-img{width:86px;height:86px;object-fit:cover;flex-shrink:0;cursor:pointer}
+.ecard-ph{width:86px;height:86px;display:flex;align-items:center;justify-content:center;font-size:2.3rem;flex-shrink:0}
+.ph-b{background:linear-gradient(135deg,#fce7f3,#f9a8d4)}
+.ph-e{background:linear-gradient(135deg,#ede9fe,#c4b5fd)}
+.ecard-info{flex:1;padding:10px 12px;display:flex;flex-direction:column;justify-content:space-between;min-width:0}
+.type-badge{display:inline-block;font-size:.6rem;font-weight:800;text-transform:uppercase;padding:2px 7px;border-radius:20px;margin-bottom:3px}
+.tb-b{background:#fce7f3;color:#be185d}
+.tb-e{background:#ede9fe;color:#6d28d9}
+.ecard-title{font-weight:800;font-size:.92rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px}
+.ecard-child{font-size:.68rem;color:#9ca3af;margin-bottom:4px}
+.ecard-date{font-size:.73rem;color:#6b7280;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.cd{font-size:.63rem;font-weight:800;padding:2px 7px;border-radius:12px;white-space:nowrap}
+.cd-today{background:#fef9c3;color:#92400e}
+.cd-soon{background:#fee2e2;color:#b91c1c}
+.cd-upcoming{background:#dbeafe;color:#1d4ed8}
+.cd-past{background:#f3f4f6;color:#6b7280}
+/* loc row */
+.loc-row{padding:5px 12px 3px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.tag-loc{font-size:.68rem;background:#e0f2fe;color:#0369a1;padding:2px 8px;border-radius:20px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px}
+.maps-sm{background:#dcfce7;color:#15803d;border:1px solid #bbf7d0;border-radius:8px;padding:3px 9px;font-size:.68rem;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:3px;white-space:nowrap;flex-shrink:0}
+/* progress */
+.prog-wrap{padding:4px 12px 5px}
+.prog-meta{font-size:.66rem;color:#9ca3af;display:flex;justify-content:space-between;margin-bottom:3px}
+.prog-bar{height:5px;background:#e5e7eb;border-radius:10px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,#10b981,#34d399);border-radius:10px;transition:width .4s}
+/* card actions */
+.card-acts{display:flex;gap:6px;padding:5px 12px 11px}
+.btn-expand{background:#f3eeff;color:#6d28d9;border:1px solid #ddd6fe;border-radius:9px;padding:5px 11px;font-size:.73rem;font-weight:700;cursor:pointer;flex:1}
+.btn-del{background:#fff1f2;color:#e11d48;border:1px solid #fecdd3;border-radius:9px;padding:5px 9px;font-size:.8rem;cursor:pointer}
+/* expanded */
+.expanded{border-top:1px solid #f3e8ff;padding:13px 14px 16px}
+.exp-img{width:100%;max-height:220px;object-fit:contain;border-radius:10px;cursor:pointer;margin-bottom:8px}
+.exp-hint{text-align:center;font-size:.66rem;color:#9ca3af;margin-top:-4px;margin-bottom:11px}
+.notes-box{background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:10px 12px;font-size:.82rem;color:#374151;white-space:pre-wrap;line-height:1.5;margin-bottom:12px}
+.mini-title{font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:#6b7280;margin-bottom:6px}
+.chk-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f9fafb;cursor:pointer}
+.chk-item:last-child{border-bottom:none}
+.chk-item input[type=checkbox]{width:17px;height:17px;accent-color:#6d28d9;cursor:pointer;flex-shrink:0}
+.chk-label{font-size:.85rem;color:#374151;flex:1}
+.chk-label.done{text-decoration:line-through;color:#9ca3af}
+/* action row */
+.act-row{display:flex;gap:7px;margin-top:10px;flex-wrap:wrap}
+.act-btn{flex:1;min-width:120px;display:flex;align-items:center;justify-content:center;gap:5px;padding:8px 10px;border-radius:10px;font-size:.75rem;font-weight:700;cursor:pointer;border:none;font-family:inherit}
+.ab-wa{background:#dcfce7;color:#15803d;border:1px solid #bbf7d0}
+.ab-share{background:#ede9fe;color:#6d28d9;border:1px solid #ddd6fe}
+.ab-cal{background:#fff7ed;color:#c2410c;border:1px solid #fed7aa}
+.ab-maps{background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;text-decoration:none;display:inline-flex}
+/* rsvp */
+.rsvp-sec{margin-top:14px}
+.rsvp-summary{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.rsvp-badge{font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:20px}
+.rb-yes{background:#dcfce7;color:#15803d}
+.rb-no{background:#fee2e2;color:#b91c1c}
+.rsvp-item{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f9fafb;font-size:.82rem}
+.rsvp-item:last-child{border-bottom:none}
+.rsvp-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.rd-yes{background:#22c55e}.rd-no{background:#ef4444}
+.rsvp-name{flex:1;font-weight:600}
+.rsvp-parent{font-size:.7rem;color:#9ca3af}
+.rsvp-form{background:#f8f9fa;border-radius:10px;padding:12px;margin-top:6px}
+.rsvp-toggle{display:flex;gap:7px;margin-bottom:8px}
+.rsvp-tog-btn{flex:1;padding:6px;border-radius:8px;border:2px solid #e5e7eb;background:white;cursor:pointer;font-weight:700;font-size:.78rem;font-family:inherit}
+.rsvp-tog-btn.active-yes{border-color:#22c55e;background:#dcfce7}
+.rsvp-tog-btn.active-no{border-color:#ef4444;background:#fee2e2}
+/* task card */
+.tcard{background:white;border-radius:14px;margin-bottom:10px;padding:13px 14px;box-shadow:0 2px 8px rgba(0,0,0,.06);display:flex;align-items:flex-start;gap:12px}
+.tcard.done-card{opacity:.6}
+.task-chk{width:22px;height:22px;accent-color:#3b82f6;cursor:pointer;flex-shrink:0;margin-top:1px}
+.tcontent{flex:1;min-width:0}
+.ttitle{font-weight:700;font-size:.9rem;margin-bottom:3px}
+.ttitle.done{text-decoration:line-through;color:#9ca3af}
+.tdesc{font-size:.77rem;color:#6b7280;margin-bottom:6px;white-space:pre-wrap}
+.tmeta{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.priority{font-size:.65rem;font-weight:800;padding:2px 8px;border-radius:12px;text-transform:uppercase}
+.p-alta{background:#fee2e2;color:#b91c1c}
+.p-media{background:#fef9c3;color:#92400e}
+.p-baja{background:#dcfce7;color:#15803d}
+.overdue-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#ef4444;margin-right:4px;animation:blink 1.4s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+/* empty */
+.empty{text-align:center;padding:50px 24px;color:#9ca3af}
+.empty-icon{font-size:3rem;margin-bottom:12px}
+.empty-title{font-size:1rem;font-weight:700;color:#6b7280;margin-bottom:6px}
+/* fab */
+.fab-wrap{position:fixed;bottom:22px;right:max(18px,calc(50vw - 222px));z-index:300;display:flex;flex-direction:column;align-items:flex-end;gap:9px}
+.fab-row{display:flex;align-items:center;gap:9px}
+.fab-lbl{background:rgba(25,18,48,.78);color:white;font-size:.72rem;padding:4px 10px;border-radius:7px;white-space:nowrap}
+.fab{width:52px;height:52px;border-radius:50%;border:none;font-size:1.4rem;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 18px rgba(0,0,0,.22);transition:all .2s;font-family:inherit}
+.fab-main{background:linear-gradient(135deg,#6d28d9,#a855f7);color:white}
+.fab-sec{background:white;color:#6d28d9;border:2px solid #ddd6fe}
+.fab-bd{position:fixed;inset:0;z-index:250}
+/* modal */
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;align-items:flex-end;justify-content:center}
+.modal-ov.open{display:flex}
+.modal{background:white;border-radius:24px 24px 0 0;width:100%;max-width:480px;max-height:93vh;overflow-y:auto;padding:18px 18px 34px;animation:slideUp .28s cubic-bezier(.17,.84,.44,1)}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-handle{width:36px;height:4px;background:#e5e7eb;border-radius:2px;margin:0 auto 16px}
+.modal-title{font-size:1.08rem;font-weight:900;color:#1a1a2e;margin-bottom:16px;text-align:center}
+/* form */
+.fg{margin-bottom:13px}
+.fl{display:block;font-size:.69rem;font-weight:800;color:#4b5563;margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px}
+.fi{width:100%;padding:9px 12px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.88rem;color:#1a1a2e;background:white;font-family:inherit;transition:border-color .2s}
+.fi:focus{outline:none;border-color:#6d28d9}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='%236b7280' d='M8 10l-4-4h8z'/%3e%3c/svg%3e");background-repeat:no-repeat;background-position:right 11px center;background-size:15px;padding-right:32px}
+.img-area{border:2px dashed #c4b5fd;border-radius:12px;padding:16px;text-align:center;cursor:pointer;background:#faf5ff}
+.img-area:hover{border-color:#6d28d9;background:#f3eeff}
+.img-preview{width:100%;max-height:160px;object-fit:contain;border-radius:10px;margin-bottom:7px}
+.fchk-item{display:flex;align-items:center;gap:9px;padding:6px 0;border-bottom:1px solid #f3f4f6}
+.fchk-item:last-child{border-bottom:none}
+.chk-del{background:none;border:none;color:#f87171;cursor:pointer;font-size:.95rem;padding:0 3px;flex-shrink:0}
+.add-row{display:flex;gap:7px;margin-top:7px}
+.btn{border:none;border-radius:11px;padding:10px 16px;font-size:.84rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-family:inherit}
+.btn-purple{background:#6d28d9;color:white}
+.btn-blue{background:#3b82f6;color:white}
+.btn-ghost{background:#f3f4f6;color:#6b7280}
+.btn-green{background:#16a34a;color:white}
+.btn-sm{padding:6px 12px;font-size:.75rem;border-radius:9px}
+/* ai */
+.ai-btn{background:linear-gradient(135deg,#6d28d9,#a855f7);color:white;border:none;border-radius:10px;padding:8px 14px;font-size:.78rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:inherit;width:100%;justify-content:center;margin-top:8px}
+.ai-btn:disabled{opacity:.5;cursor:not-allowed}
+.ai-err{font-size:.73rem;color:#ef4444;margin-top:5px}
+/* lightbox */
+.lbx{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:2000;align-items:center;justify-content:center;padding:16px}
+.lbx.open{display:flex}
+.lbx img{max-width:100%;max-height:90vh;object-fit:contain;border-radius:8px}
+.lbx-close{position:fixed;top:18px;right:18px;background:rgba(255,255,255,.15);border:none;color:white;font-size:1.3rem;width:38px;height:38px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center}
+/* wa modal */
+.wa-box{background:#eff9ef;border:1.5px solid #a7f3d0;border-radius:12px;padding:14px;font-size:.82rem;white-space:pre-wrap;line-height:1.6;margin-bottom:14px;max-height:260px;overflow-y:auto;font-family:inherit}
+.copy-btn{width:100%;background:#25d366;color:white;border:none;border-radius:12px;padding:11px;font-size:.88rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-family:inherit;margin-bottom:8px}
+/* info box */
+.info-box{background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:10px 12px;font-size:.75rem;color:#1e40af;line-height:1.6;margin-bottom:13px}
+.api-hint{font-size:.67rem;color:#9ca3af;margin-top:4px;line-height:1.5}
+/* child chips */
+.child-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.child-chip{padding:5px 12px;border-radius:20px;border:1.5px solid #e5e7eb;background:white;color:#374151;cursor:pointer;font-weight:700;font-size:.8rem;font-family:inherit}
+.child-chip.selected{border-color:#6d28d9;background:#ede9fe;color:#6d28d9}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#c4b5fd;border-radius:2px}
+</style>
+</head>
+<body>
+<div id="root">
+  <div id="app"><div style="text-align:center;padding:60px 20px;color:#9ca3af;font-size:.9rem">Cargando Agenda Familiar… 🎉</div></div>
+  <div id="fab-area"></div>
+</div>
+<div class="modal-ov" id="modal"><div class="modal" id="modal-inner"></div></div>
+<div class="lbx" id="lightbox"><img id="lbx-img" src="" alt=""><button class="lbx-close" id="lbx-close">✕</button></div>
+
+<script>
+window.onerror = function(msg, src, line, col, err) {
+  var el = document.getElementById('app');
+  if (el) el.innerHTML = '<div style="padding:24px;color:#b91c1c;font-size:.85rem;line-height:1.7;background:#fef2f2;border-radius:12px;margin:20px"><strong>⚠️ Error al cargar la app</strong><br><br>' + msg + (line ? '<br>Línea ' + line : '') + '<br><br><em>Abrí la consola del navegador (F12) para más detalles.</em></div>';
+};
+/* ════════════════════════════════════════
+   UTILS
+════════════════════════════════════════ */
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
+const esc = s => s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') : '';
+const fmtShort = d => { if(!d) return ''; return new Date(d+'T12:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'}); };
+const fmtLong  = d => { if(!d) return ''; return new Date(d+'T12:00:00').toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}); };
+const fmtTime  = (f,t) => { if(!f) return ''; return t ? `${f} – ${t}hs` : `${f}hs`; };
+const daysUntil = d => { if(!d) return null; const t=new Date(); t.setHours(0,0,0,0); return Math.round((new Date(d+'T00:00:00')-t)/86400000); };
+const countdownHtml = d => {
+  const days = daysUntil(d); if(days===null) return '';
+  let cls,txt;
+  if(days===0){cls='cd-today';txt='¡Hoy!';}
+  else if(days===1){cls='cd-soon';txt='Mañana';}
+  else if(days>0&&days<=7){cls='cd-soon';txt=`En ${days} días`;}
+  else if(days>7){cls='cd-upcoming';txt=`En ${days} días`;}
+  else{cls='cd-past';txt=`Hace ${Math.abs(days)} d`;}
+  return `<span class="cd ${cls}">${txt}</span>`;
+};
+
+/* ════════════════════════════════════════
+   STATE
+════════════════════════════════════════ */
+const DEF_SETTINGS = {myName:'',myPhone:'',children:[],googleApiKey:'',reminderDays:3};
+const DEF_CHECKLIST = ['Confirmar asistencia','Depositar para el regalo','Comprar el regalo','Envolver el regalo','Llevar el regalo'];
+
+const S = {
+  events: [],
+  tasks: [],
+  settings: {...DEF_SETTINGS},
+  tab: 'home',
+  expanded: new Set(),
+  rsvpOpen: null,
+  rsvpAttending: {},
+  fabOpen: false
+};
+
+const persist = () => {
+  localStorage.setItem('agFam_events', JSON.stringify(S.events));
+  localStorage.setItem('agFam_tasks', JSON.stringify(S.tasks));
+  localStorage.setItem('agFam_settings', JSON.stringify(S.settings));
+};
+const hydrate = () => {
+  try { S.events   = JSON.parse(localStorage.getItem('agFam_events') || '[]'); } catch{}
+  try { S.tasks    = JSON.parse(localStorage.getItem('agFam_tasks')  || '[]'); } catch{}
+  try { S.settings = {...DEF_SETTINGS,...JSON.parse(localStorage.getItem('agFam_settings')||'{}')}; } catch{}
+};
+
+/* ════════════════════════════════════════
+   AI & SHARE HELPERS
+════════════════════════════════════════ */
+const analyzeWithGemini = async (imageBase64, apiKey) => {
+  const [meta, data] = imageBase64.split(',');
+  const mimeType = meta.split(':')[1].split(';')[0];
+  const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,{
+    method:'POST', headers:{'content-type':'application/json'},
+    body: JSON.stringify({
+      contents:[{parts:[
+        {inline_data:{mime_type:mimeType,data}},
+        {text:`Analizá esta invitación y extraé los datos. Respondé SOLO con JSON sin markdown:\n{"title":"nombre del evento","date":"YYYY-MM-DD o null","timeFrom":"HH:MM 24hs o null","timeTo":"HH:MM 24hs o null","location":"dirección o null","notes":"info útil o null"}`}
+      ]}],
+      generationConfig:{temperature:0.1,maxOutputTokens:512}
+    })
+  });
+  if(!r.ok){const e=await r.json().catch(()=>({})); throw new Error(e?.error?.message||'Error de API. Verificá tu clave.');}
+  const j = await r.json();
+  const txt = j.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  return JSON.parse(txt.replace(/```json\s*/g,'').replace(/```\s*/g,'').trim());
+};
+
+const genWAMessage = ev => {
+  const phone = S.settings.myPhone||'';
+  const ref = `${ev.title} (${fmtShort(ev.date)})`;
+  const yesLink = phone ? `https://wa.me/${phone}?text=${encodeURIComponent('✅ SÍ va al '+ref+' - [nombre del hijo/a]')}` : null;
+  const noLink  = phone ? `https://wa.me/${phone}?text=${encodeURIComponent('❌ NO puede ir al '+ref+' - [nombre del hijo/a]')}` : null;
+  let msg = `${ev.type==='birthday'?'🎂':'🎉'} *${ev.title}*\n`;
+  if(ev.date) msg += `📅 ${fmtLong(ev.date)}${ev.timeFrom?` · ${fmtTime(ev.timeFrom,ev.timeTo)}`:''}  \n`;
+  if(ev.location) msg += `📍 ${ev.location}\n`;
+  const murl = ev.mapsLink||(ev.location?`https://maps.google.com/?q=${encodeURIComponent(ev.location)}`:'');
+  if(murl) msg += `🗺️ ${murl}\n`;
+  if(ev.notes) msg += `\n📝 ${ev.notes}\n`;
+  if(phone){ msg+=`\n━━━━━━━━━━━━━━━\nConfirmá asistencia de tu hijo/a:\n\n✅ *SÍ va:*\n${yesLink}\n\n❌ *NO puede ir:*\n${noLink}\n`; }
+  const sign = ev.childName||S.settings.myName;
+  if(sign) msg += `\n_Organiza: Mamá de ${sign}_`;
+  return msg;
+};
+
+const downloadEventPage = ev => {
+  const ph = S.settings.myPhone||'';
+  const ref = `${ev.title} (${fmtShort(ev.date)})`;
+  const yesMsg = encodeURIComponent('✅ SÍ va al '+ref+' - [nombre del hijo/a]');
+  const noMsg  = encodeURIComponent('❌ NO puede ir al '+ref+' - [nombre del hijo/a]');
+  const murl = ev.mapsLink||(ev.location?`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ev.location)}`:'');
+  const ts = fmtTime(ev.timeFrom,ev.timeTo);
+  const html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>${ev.title}</title>
+<style>*{box-sizing:border-box}body{margin:0;font-family:-apple-system,sans-serif;background:#f4f0ff;display:flex;justify-content:center;min-height:100vh}.card{background:white;border-radius:20px;max-width:420px;width:calc(100% - 28px);margin:14px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.13)}.hero{background:linear-gradient(135deg,#6d28d9,#db2777);color:white;padding:28px 20px;text-align:center}.hi{font-size:3.5rem;margin-bottom:10px}.ht{font-size:1.5rem;font-weight:900;margin-bottom:6px}.hb{background:rgba(255,255,255,.2);border-radius:20px;padding:4px 14px;font-size:.78rem;display:inline-block}.body{padding:20px}.det{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px}.di{font-size:1.3rem;flex-shrink:0}.dl{font-size:.65rem;font-weight:800;text-transform:uppercase;color:#9ca3af;margin-bottom:2px}.dt{font-size:.92rem;color:#374151;font-weight:500}.nb{background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:12px;font-size:.84rem;color:#374151;margin-bottom:14px}.mb{display:flex;align-items:center;justify-content:center;gap:8px;background:#f0fdf4;color:#16a34a;border:1.5px solid #bbf7d0;border-radius:12px;padding:11px;text-decoration:none;font-size:.86rem;font-weight:700;margin-bottom:16px}.rsvp{border-top:1px solid #f3e8ff;padding:20px}.rt{text-align:center;margin-bottom:14px}.rts{display:block;font-size:1.05rem;color:#1a1a2e;margin-bottom:4px;font-weight:800}.rtsub{font-size:.78rem;color:#6b7280}.rb{display:flex;align-items:center;justify-content:center;gap:10px;padding:14px;border-radius:13px;text-decoration:none;font-weight:800;font-size:1rem;margin-bottom:10px}.yes{background:#dcfce7;color:#15803d;border:2px solid #86efac}.no{background:#fee2e2;color:#b91c1c;border:2px solid #fca5a5}.org{text-align:center;font-size:.72rem;color:#9ca3af;margin-top:14px;line-height:1.6}img.inv{width:100%;max-height:260px;object-fit:contain;border-radius:12px;margin-bottom:16px}</style>
+</head><body><div class="card">
+<div class="hero"><div class="hi">${ev.type==='birthday'?'🎂':'🎉'}</div><div class="ht">${esc(ev.title)}</div>${ev.childName?`<div class="hb">Invitación para ${esc(ev.childName)}</div>`:''}</div>
+<div class="body">
+${ev.image?`<img src="${ev.image}" class="inv" alt="Invitación">`:'' }
+${ev.date?`<div class="det"><div class="di">📅</div><div><div class="dl">Fecha y hora</div><div class="dt">${fmtLong(ev.date)}${ts?` · ${ts}`:''}</div></div></div>`:''}
+${ev.location?`<div class="det"><div class="di">📍</div><div><div class="dl">Lugar</div><div class="dt">${esc(ev.location)}</div></div></div>`:''}
+${murl?`<a href="${murl}" target="_blank" class="mb">🗺️ Abrir en Google Maps</a>`:''}
+${ev.notes?`<div class="nb">📝 ${esc(ev.notes)}</div>`:''}
+</div>
+${ph?`<div class="rsvp"><div class="rt"><span class="rts">¿Tu hijo/a va a poder ir?</span><span class="rtsub">Confirmá haciendo click:</span></div><a href="https://wa.me/${ph}?text=${yesMsg}" class="rb yes">✅ SÍ, vamos a ir</a><a href="https://wa.me/${ph}?text=${noMsg}" class="rb no">❌ No podemos ir</a><div class="org">Al hacer click se abrirá WhatsApp${S.settings.myName?`<br>Organiza: Mamá de ${esc(ev.childName||S.settings.myName)}`:''}</div></div>`:''}
+</div></body></html>`;
+  const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=`Invitacion - ${ev.title}.html`;a.click();URL.revokeObjectURL(url);
+};
+
+const downloadICS = ev => {
+  const pad=n=>String(n).padStart(2,'0');
+  const toD=(d,t)=>{const x=new Date(d+'T'+(t||'12:00')+':00');return `${x.getFullYear()}${pad(x.getMonth()+1)}${pad(x.getDate())}T${pad(x.getHours())}${pad(x.getMinutes())}00`;};
+  const start=toD(ev.date,ev.timeFrom);
+  const endT=ev.timeTo?ev.timeTo:(ev.timeFrom?pad(parseInt(ev.timeFrom)+3)+':'+ev.timeFrom.split(':')[1]:'15:00');
+  const end=toD(ev.date,endT);
+  const ics=`BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Agenda Familiar//ES\nBEGIN:VEVENT\nUID:${ev.id}@agfam\nDTSTAMP:${toD(new Date().toISOString().slice(0,10),new Date().toTimeString().slice(0,5))}\nDTSTART:${start}\nDTEND:${end}\nSUMMARY:${ev.title}\nLOCATION:${ev.location||''}\nDESCRIPTION:${ev.notes||''}\nEND:VEVENT\nEND:VCALENDAR`;
+  const blob=new Blob([ics],{type:'text/calendar'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=`${ev.title}.ics`;a.click();URL.revokeObjectURL(url);
+};
+
+/* ════════════════════════════════════════
+   RENDER HELPERS
+════════════════════════════════════════ */
+const sortedEvents = () => [...S.events].sort((a,b)=>{ if(!a.date)return 1;if(!b.date)return -1;return new Date(a.date)-new Date(b.date); });
+const upcoming = () => sortedEvents().filter(e=>daysUntil(e.date)>=0);
+const past     = () => sortedEvents().filter(e=>daysUntil(e.date)<0);
+const pendingTasks = () => [...S.tasks].filter(t=>!t.completed).sort((a,b)=>{ if(!a.dueDate)return 1;if(!b.dueDate)return -1;return new Date(a.dueDate)-new Date(b.dueDate); });
+const doneTasks    = () => S.tasks.filter(t=>t.completed);
+
+const renderEventCard = ev => {
+  const isOpen = S.expanded.has(ev.id);
+  const chkDone = ev.checklist.filter(i=>i.checked).length;
+  const chkTotal = ev.checklist.length;
+  const pct = chkTotal>0?(chkDone/chkTotal)*100:0;
+  const murl = ev.mapsLink||(ev.location?`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ev.location)}`:'');
+  const ts = fmtTime(ev.timeFrom,ev.timeTo);
+  const rsvpList = ev.rsvpList||[];
+  const yesRsvp = rsvpList.filter(r=>r.attending==='yes');
+  const noRsvp  = rsvpList.filter(r=>r.attending==='no');
+  const rsvpOpenForThis = S.rsvpOpen === ev.id;
+  const attending = S.rsvpAttending[ev.id]||'yes';
+
+  return `<div class="ecard">
+    <div class="ecard-top">
+      ${ev.image
+        ? `<img class="ecard-img" src="${ev.image}" data-lbx="${esc(ev.image)}" alt="">`
+        : `<div class="ecard-ph ${ev.type==='birthday'?'ph-b':'ph-e'}">${ev.type==='birthday'?'🎂':'🎉'}</div>`}
+      <div class="ecard-info">
+        <div>
+          <span class="type-badge ${ev.type==='birthday'?'tb-b':'tb-e'}">${ev.type==='birthday'?'🎂 Cumpleaños':'🎉 Evento'}</span>
+          <div class="ecard-title">${esc(ev.title)}</div>
+          ${ev.childName?`<div class="ecard-child">👶 ${esc(ev.childName)}</div>`:''}
+        </div>
+        <div class="ecard-date">📅 ${fmtShort(ev.date)}${ts?` · ${ts}`:''} ${countdownHtml(ev.date)}</div>
+      </div>
+    </div>
+    ${ev.location?`<div class="loc-row"><span class="tag-loc">📍 ${esc(ev.location)}</span>${murl?`<a href="${murl}" target="_blank" class="maps-sm">🗺 Maps</a>`:''}</div>`:''}
+    ${chkTotal>0?`<div class="prog-wrap"><div class="prog-meta"><span>Checklist</span><span>${chkDone}/${chkTotal}</span></div><div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div></div>`:''}
+    <div class="card-acts">
+      <button class="btn-expand" data-expand="${ev.id}">${isOpen?'▲ Menos':'▼ Ver detalles'}</button>
+      <button class="btn-del" data-del-event="${ev.id}">🗑</button>
+    </div>
+    ${isOpen?`<div class="expanded">
+      ${ev.image?`<img class="exp-img" src="${ev.image}" data-lbx="${esc(ev.image)}" alt=""><div class="exp-hint">Tocá para ampliar</div>`:''}
+      ${ev.notes?`<div class="notes-box">${esc(ev.notes)}</div>`:''}
+      ${chkTotal>0?`<div class="mini-title" style="margin-top:${ev.notes?'10px':'0'}">✅ Lista de verificación</div>
+        ${ev.checklist.map(item=>`<div class="chk-item" data-toggle-chk="${ev.id}|${item.id}">
+          <input type="checkbox" ${item.checked?'checked':''} data-chk="${ev.id}|${item.id}">
+          <span class="chk-label ${item.checked?'done':''}">${esc(item.label)}</span>
+          ${item.checked?'<span style="font-size:.88rem">✅</span>':''}
+        </div>`).join('')}`:''}
+      <div class="rsvp-sec">
+        <div class="mini-title">👋 Confirmaciones de asistencia</div>
+        ${rsvpList.length>0?`<div class="rsvp-summary">
+          ${yesRsvp.length>0?`<span class="rsvp-badge rb-yes">✅ ${yesRsvp.length} confirmados</span>`:''}
+          ${noRsvp.length>0?`<span class="rsvp-badge rb-no">❌ ${noRsvp.length} no pueden</span>`:''}
+        </div>`:''}
+        ${rsvpList.map(r=>`<div class="rsvp-item">
+          <div class="rsvp-dot ${r.attending==='yes'?'rd-yes':'rd-no'}"></div>
+          <div class="rsvp-name">${esc(r.childName)}</div>
+          ${r.parentName?`<div class="rsvp-parent">(${esc(r.parentName)})</div>`:''}
+          <button style="background:none;border:none;color:#f87171;cursor:pointer;font-size:.82rem" data-del-rsvp="${ev.id}|${r.id}">✕</button>
+        </div>`).join('')}
+        ${rsvpOpenForThis?`
+          <div class="rsvp-form">
+            <div class="rsvp-toggle">
+              <button class="rsvp-tog-btn ${attending==='yes'?'active-yes':''}" data-rsvp-att="${ev.id}|yes">✅ SÍ va</button>
+              <button class="rsvp-tog-btn ${attending==='no'?'active-no':''}" data-rsvp-att="${ev.id}|no">❌ No puede</button>
+            </div>
+            <input class="fi" id="rsvp-child-${ev.id}" placeholder="Nombre del hijo/a *" style="margin-bottom:7px">
+            <input class="fi" id="rsvp-parent-${ev.id}" placeholder="Mamá/Papá de (opcional)" style="margin-bottom:9px">
+            <div style="display:flex;gap:7px">
+              <button class="btn btn-ghost btn-sm" data-rsvp-cancel style="flex:1">Cancelar</button>
+              <button class="btn btn-green btn-sm" data-rsvp-save="${ev.id}" style="flex:2">Guardar</button>
+            </div>
+          </div>`
+        :`<button class="act-btn ab-share" style="width:100%;margin-top:6px" data-rsvp-open="${ev.id}">+ Registrar respuesta</button>`}
+      </div>
+      <div class="act-row">
+        <button class="act-btn ab-wa" data-wa-msg="${ev.id}">📤 RSVP WhatsApp</button>
+        <button class="act-btn ab-share" data-share-page="${ev.id}">📄 Página compartible</button>
+      </div>
+      <div class="act-row">
+        ${murl?`<a href="${murl}" target="_blank" class="act-btn ab-maps">🗺️ Google Maps</a>`:''}
+        <button class="act-btn ab-cal" data-ics="${ev.id}">📅 Agregar al calendario</button>
+      </div>
+    </div>`:''}
+  </div>`;
+};
+
+const renderTaskCard = t => {
+  const days = daysUntil(t.dueDate);
+  const overdue = days!==null&&days<0&&!t.completed;
+  return `<div class="tcard ${t.completed?'done-card':''}">
+    <input type="checkbox" class="task-chk" ${t.completed?'checked':''} data-task-check="${t.id}">
+    <div class="tcontent">
+      <div class="ttitle ${t.completed?'done':''}">${overdue?'<span class="overdue-dot"></span>':''}${esc(t.title)}</div>
+      ${t.description?`<div class="tdesc">${esc(t.description)}</div>`:''}
+      <div class="tmeta">
+        <span class="priority p-${t.priority}">${t.priority==='alta'?'🔴':t.priority==='media'?'🟡':'🟢'} ${t.priority}</span>
+        ${t.dueDate?`<span style="font-size:.72rem;color:#6b7280">📅 ${fmtShort(t.dueDate)}</span>`:''}
+        ${countdownHtml(t.dueDate)}
+      </div>
+    </div>
+    <button class="btn-del" data-del-task="${t.id}">🗑</button>
+  </div>`;
+};
+
+const renderHome = () => {
+  const up = upcoming(); const pt = pendingTasks();
+  const todayEvs = S.events.filter(e=>daysUntil(e.date)===0);
+  const overdue = S.tasks.filter(t=>!t.completed&&t.dueDate&&daysUntil(t.dueDate)<0);
+  return `
+    <div class="stats">
+      <div class="stat"><div class="stat-n" style="color:#be185d">${up.length}</div><div class="stat-l">Próximos eventos</div></div>
+      <div class="stat"><div class="stat-n" style="color:#1d4ed8">${pt.length}</div><div class="stat-l">Tareas pendientes</div></div>
+      <div class="stat"><div class="stat-n" style="color:#b91c1c">${overdue.length}</div><div class="stat-l">Vencidas</div></div>
+    </div>
+    ${todayEvs.length?`<div class="today-banner"><div style="font-size:2rem;flex-shrink:0">🎉</div><div><div style="font-weight:800;font-size:.92rem">¡Evento hoy!</div><div style="font-size:.74rem;opacity:.9;margin-top:2px">${todayEvs.map(e=>esc(e.title)).join(' · ')}</div></div></div>`:''}
+    ${up.length===0&&pt.length===0?`<div class="empty"><div class="empty-icon">🎊</div><div class="empty-title">Todo al día</div><div>No tenés eventos ni tareas pendientes.<br>Usá el botón + para agregar.</div></div>`:''}
+    ${up.length?`<div class="sec-hdr">Próximos eventos 🎂</div>${up.map(renderEventCard).join('')}`:''}
+    ${pt.length?`<div class="sec-hdr">Tareas pendientes ✅</div>${pt.map(renderTaskCard).join('')}`:''}
+  `;
+};
+
+const renderEvents = () => {
+  const up=upcoming(), pa=past();
+  if(!S.events.length) return `<div class="empty"><div class="empty-icon">🎂</div><div class="empty-title">Sin eventos</div><div>Tocá el + para agregar el primer cumpleaños</div></div>`;
+  return `${up.length?`<div class="sec-hdr">Próximos</div>${up.map(renderEventCard).join('')}`:''}${pa.length?`<div class="sec-hdr">Pasados</div>${pa.map(renderEventCard).join('')}`:''}`;
+};
+
+const renderTasks = () => {
+  const pt=pendingTasks(), dt=doneTasks();
+  if(!S.tasks.length) return `<div class="empty"><div class="empty-icon">✅</div><div class="empty-title">Sin tareas</div><div>Agregá tareas y entregas con el botón +</div></div>`;
+  return `${pt.length?`<div class="sec-hdr">Pendientes</div>${pt.map(renderTaskCard).join('')}`:''}${dt.length?`<div class="sec-hdr">Completadas</div>${dt.map(renderTaskCard).join('')}`:''}`;
+};
+
+const render = () => {
+  const sub = S.settings.myName?`Hola, ${esc(S.settings.myName)} 👋`:'Cumpleaños, eventos y tareas';
+  document.getElementById('app').innerHTML = `
+    <div class="hdr">
+      <div class="hdr-left"><div class="hdr-logo">🎉</div><div><div class="hdr-title">Agenda Familiar</div><div class="hdr-sub">${sub}</div></div></div>
+      <button class="icon-btn" id="btn-settings">⚙️</button>
+    </div>
+    <div class="tabs">
+      <button class="tab ${S.tab==='home'?'active':''}" data-tab="home"><span class="tab-icon">🏠</span>INICIO</button>
+      <button class="tab ${S.tab==='events'?'active':''}" data-tab="events"><span class="tab-icon">🎂</span>EVENTOS</button>
+      <button class="tab ${S.tab==='tasks'?'active':''}" data-tab="tasks"><span class="tab-icon">✅</span>TAREAS</button>
+    </div>
+    <div class="content">
+      ${S.tab==='home'?renderHome():S.tab==='events'?renderEvents():renderTasks()}
+    </div>
+  `;
+  document.getElementById('fab-area').innerHTML = `
+    ${S.fabOpen?`<div class="fab-bd" id="fab-bd"></div>`:''}
+    <div class="fab-wrap">
+      ${S.fabOpen?`
+        <div class="fab-row"><span class="fab-lbl">Agregar evento / cumpleaños</span><button class="fab fab-sec" id="btn-add-event">🎂</button></div>
+        <div class="fab-row"><span class="fab-lbl">Agregar tarea o entrega</span><button class="fab fab-sec" id="btn-add-task">✅</button></div>
+      `:''}
+      <button class="fab fab-main" id="fab-main" style="transform:${S.fabOpen?'rotate(45deg)':'none'};transition:transform .2s">+</button>
+    </div>
+  `;
+};
+
+/* ════════════════════════════════════════
+   MODALS
+════════════════════════════════════════ */
+// Shared form state for add event
+let AE = { type:'birthday', checklist:[], image:null };
+
+const openModal = () => { document.getElementById('modal').classList.add('open'); };
+const closeModal = () => {
+  document.getElementById('modal').classList.remove('open');
+  document.getElementById('modal-inner').innerHTML='';
+};
+
+const showAddEventModal = () => {
+  AE = { type:'birthday', checklist: DEF_CHECKLIST.map(l=>({id:uid(),label:l,checked:false})), image:null };
+  buildAddEventForm();
+  openModal();
+};
+
+const buildAddEventForm = () => {
+  const children = S.settings.children||[];
+  const chipsHtml = children.length
+    ? `<div class="child-chips" id="ae-chips">${children.map(c=>`<button class="child-chip" data-chip="${esc(c.name)}">${esc(c.name)}</button>`).join('')}</div>` : '';
+  document.getElementById('modal-inner').innerHTML=`
+    <div class="modal-handle"></div>
+    <div class="modal-title">${AE.type==='birthday'?'🎂 Nuevo Cumpleaños':'🎉 Nuevo Evento'}</div>
+    <div class="fg"><label class="fl">Tipo</label>
+      <select class="fi" id="ae-type"><option value="birthday">🎂 Cumpleaños</option><option value="event">🎉 Evento / Fiesta</option></select></div>
+    <div class="fg"><label class="fl">Imagen de la invitación</label>
+      <input type="file" accept="image/*" id="ae-img-input" style="display:none">
+      <div class="img-area" id="ae-img-area"><div style="font-size:1.9rem;margin-bottom:6px">📸</div><div style="font-size:.82rem;color:#6d28d9;font-weight:700">Subir imagen de la invitación</div><div style="font-size:.68rem;color:#9ca3af;margin-top:3px">PNG, JPG, foto del WhatsApp</div></div>
+      <button class="ai-btn" id="ae-ai-btn">🤖 Autocompletar con IA</button>
+      <div class="ai-err" id="ae-ai-err" style="display:none"></div>
+    </div>
+    <div class="fg"><label class="fl">Título *</label><input class="fi" id="ae-title" placeholder="Ej: Cumpleaños de Lucía"></div>
+    <div class="fg"><label class="fl">¿Quién va?${children.length?' (elegí o escribí)':''}</label>${chipsHtml}<input class="fi" id="ae-child" placeholder="Nombre del hijo/a"></div>
+    <div class="fg"><label class="fl">Fecha *</label><input type="date" class="fi" id="ae-date"></div>
+    <div class="fg"><label class="fl">Horario</label>
+      <div class="fr">
+        <div><label class="fl" style="font-size:.62rem">Desde</label><input type="time" class="fi" id="ae-from"></div>
+        <div><label class="fl" style="font-size:.62rem">Hasta (opcional)</label><input type="time" class="fi" id="ae-to"></div>
+      </div></div>
+    <div class="fg"><label class="fl">Dirección / Lugar</label><input class="fi" id="ae-loc" placeholder="Ej: Av. Córdoba 1234, Buenos Aires"></div>
+    <div class="fg"><label class="fl">Link de Google Maps (opcional)</label>
+      <input class="fi" id="ae-mapslink" placeholder="Pegá el link de Maps aquí">
+      <div style="font-size:.66rem;color:#9ca3af;margin-top:3px">Si no pegás un link, se usa la dirección automáticamente</div></div>
+    <div class="fg"><label class="fl">Lista de verificación</label>
+      <div id="ae-checklist"></div>
+      <div class="add-row"><input class="fi" id="ae-new-item" placeholder="Agregar ítem..." style="flex:1"><button class="btn btn-purple btn-sm" id="ae-add-item">+ Agregar</button></div>
+    </div>
+    <div class="fg"><label class="fl">Notas adicionales</label><textarea class="fi" id="ae-notes" rows="3" placeholder="Tema de la fiesta, qué llevar, etc." style="resize:vertical"></textarea></div>
+    <div style="display:flex;gap:9px;margin-top:8px">
+      <button class="btn btn-ghost" id="ae-cancel" style="flex:1">Cancelar</button>
+      <button class="btn btn-purple" id="ae-save" style="flex:2">💾 Guardar evento</button>
+    </div>`;
+  renderAEChecklist();
+  attachAEListeners();
+};
+
+const renderAEChecklist = () => {
+  const c = document.getElementById('ae-checklist'); if(!c) return;
+  c.innerHTML = AE.checklist.map(item=>`
+    <div class="fchk-item">
+      <input type="checkbox" ${item.checked?'checked':''} data-ae-chk="${item.id}" style="width:16px;height:16px;accent-color:#6d28d9">
+      <span style="flex:1;font-size:.84rem">${esc(item.label)}</span>
+      <button class="chk-del" data-ae-del="${item.id}">✕</button>
+    </div>`).join('');
+};
+
+const attachAEListeners = () => {
+  // image
+  document.getElementById('ae-img-area').onclick = () => document.getElementById('ae-img-input').click();
+  document.getElementById('ae-img-input').onchange = e => {
+    const file=e.target.files[0]; if(!file) return;
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      const img=new Image();
+      img.onload=()=>{
+        const c=document.createElement('canvas');
+        const MAX=1200;let w=img.width,h=img.height;
+        if(w>MAX){h=(h*MAX)/w;w=MAX;}
+        c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);
+        AE.image=c.toDataURL('image/jpeg',.82);
+        document.getElementById('ae-img-area').innerHTML=`<img src="${AE.image}" class="img-preview"><div style="font-size:.72rem;color:#6d28d9;font-weight:600">Tocar para cambiar</div>`;
+      };
+      img.src=ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  };
+  // AI
+  document.getElementById('ae-ai-btn').onclick = async () => {
+    const errEl=document.getElementById('ae-ai-err');
+    if(!AE.image){errEl.textContent='Primero subí una imagen.';errEl.style.display='block';return;}
+    if(!S.settings.googleApiKey){errEl.textContent='Configurá tu API Key de Google en ⚙️ primero. ¡Es gratis!';errEl.style.display='block';return;}
+    errEl.style.display='none';
+    const btn=document.getElementById('ae-ai-btn');
+    btn.disabled=true;btn.textContent='🤖 Analizando...';
+    try{
+      const r=await analyzeWithGemini(AE.image,S.settings.googleApiKey);
+      if(r.title) document.getElementById('ae-title').value=r.title;
+      if(r.date)  document.getElementById('ae-date').value=r.date;
+      if(r.timeFrom) document.getElementById('ae-from').value=r.timeFrom;
+      if(r.timeTo)   document.getElementById('ae-to').value=r.timeTo;
+      if(r.location) document.getElementById('ae-loc').value=r.location;
+      if(r.notes)    document.getElementById('ae-notes').value=r.notes;
+      btn.textContent='✅ ¡Completado!';
+    }catch(err){
+      errEl.textContent='Error: '+err.message;errEl.style.display='block';
+      btn.textContent='🤖 Autocompletar con IA';
+    }finally{btn.disabled=false;}
+  };
+  // child chips
+  document.querySelectorAll('[data-chip]').forEach(ch=>{
+    ch.onclick=()=>{
+      const name=ch.dataset.chip;
+      const input=document.getElementById('ae-child');
+      input.value = input.value===name?'':name;
+      document.querySelectorAll('[data-chip]').forEach(x=>x.classList.toggle('selected',x.dataset.chip===input.value));
+    };
+  });
+  // checklist events
+  document.getElementById('ae-checklist').onclick=e=>{
+    const d=e.target.dataset.aeDel;
+    if(d){AE.checklist=AE.checklist.filter(i=>i.id!==d);renderAEChecklist();}
+  };
+  document.getElementById('ae-checklist').onchange=e=>{
+    if(e.target.dataset.aeChk){const item=AE.checklist.find(i=>i.id===e.target.dataset.aeChk);if(item)item.checked=e.target.checked;}
+  };
+  // add item
+  const addItem=()=>{
+    const inp=document.getElementById('ae-new-item');
+    const lbl=inp.value.trim();if(!lbl)return;
+    AE.checklist.push({id:uid(),label:lbl,checked:false});inp.value='';renderAEChecklist();
+  };
+  document.getElementById('ae-add-item').onclick=addItem;
+  document.getElementById('ae-new-item').onkeydown=e=>{if(e.key==='Enter')addItem();};
+  // save
+  document.getElementById('ae-save').onclick=()=>{
+    const title=document.getElementById('ae-title').value.trim();
+    const date=document.getElementById('ae-date').value;
+    if(!title){alert('Ingresá el título');return;}
+    if(!date){alert('Seleccioná la fecha');return;}
+    const ev={
+      id:uid(),type:document.getElementById('ae-type').value,title,
+      childName:document.getElementById('ae-child').value.trim(),
+      date,timeFrom:document.getElementById('ae-from').value,timeTo:document.getElementById('ae-to').value,
+      location:document.getElementById('ae-loc').value.trim(),
+      mapsLink:document.getElementById('ae-mapslink').value.trim(),
+      notes:document.getElementById('ae-notes').value.trim(),
+      image:AE.image,checklist:[...AE.checklist],rsvpList:[],
+      createdAt:new Date().toISOString()
+    };
+    S.events.push(ev);persist();closeModal();render();
+  };
+  document.getElementById('ae-cancel').onclick=closeModal;
+  document.getElementById('modal').onclick=e=>{if(e.target===document.getElementById('modal'))closeModal();};
+};
+
+const showAddTaskModal = () => {
+  document.getElementById('modal-inner').innerHTML=`
+    <div class="modal-handle"></div>
+    <div class="modal-title">✅ Nueva Tarea / Entrega</div>
+    <div class="fg"><label class="fl">Título *</label><input class="fi" id="at-title" placeholder="Ej: Comprar regalo para el cumple de Lucía"></div>
+    <div class="fg"><label class="fl">Descripción</label><textarea class="fi" id="at-desc" rows="3" placeholder="Detalles..." style="resize:vertical"></textarea></div>
+    <div class="fg"><div class="fr">
+      <div><label class="fl">Fecha límite</label><input type="date" class="fi" id="at-date"></div>
+      <div><label class="fl">Prioridad</label><select class="fi" id="at-pri"><option value="alta">🔴 Alta</option><option value="media" selected>🟡 Media</option><option value="baja">🟢 Baja</option></select></div>
+    </div></div>
+    <div style="display:flex;gap:9px;margin-top:8px">
+      <button class="btn btn-ghost" id="at-cancel" style="flex:1">Cancelar</button>
+      <button class="btn btn-blue" id="at-save" style="flex:2">💾 Guardar tarea</button>
+    </div>`;
+  openModal();
+  document.getElementById('at-save').onclick=()=>{
+    const title=document.getElementById('at-title').value.trim();
+    if(!title){alert('Ingresá el título');return;}
+    S.tasks.push({id:uid(),title,description:document.getElementById('at-desc').value.trim(),dueDate:document.getElementById('at-date').value,priority:document.getElementById('at-pri').value,completed:false,createdAt:new Date().toISOString()});
+    persist();closeModal();render();
+  };
+  document.getElementById('at-cancel').onclick=closeModal;
+  document.getElementById('modal').onclick=e=>{if(e.target===document.getElementById('modal'))closeModal();};
+};
+
+const showSettingsModal = () => {
+  const ch = S.settings.children||[];
+  document.getElementById('modal-inner').innerHTML=`
+    <div class="modal-handle"></div>
+    <div class="modal-title">⚙️ Configuración</div>
+    <div class="fg"><label class="fl">Mi nombre</label><input class="fi" id="cfg-name" value="${esc(S.settings.myName)}" placeholder="Ej: Flor"></div>
+    <div class="fg"><label class="fl">Mi número de WhatsApp</label>
+      <input class="fi" id="cfg-phone" value="${esc(S.settings.myPhone)}" placeholder="Ej: 5491198765432">
+      <div class="api-hint">Formato internacional sin + ni espacios.<br>Argentina: 549 + código de área + número</div></div>
+    <div class="fg"><label class="fl">Mis hijos</label>
+      <div id="cfg-children">${ch.map(c=>`<div class="fchk-item"><span style="font-size:1rem">👶</span><span style="flex:1;font-size:.85rem;font-weight:600">${esc(c.name)}</span><button class="chk-del" data-cfg-del="${c.id}">✕</button></div>`).join('')}</div>
+      <div class="add-row"><input class="fi" id="cfg-new-child" placeholder="Nombre del hijo/a" style="flex:1"><button class="btn btn-purple btn-sm" id="cfg-add-child">+ Agregar</button></div>
+    </div>
+    <div class="fg"><label class="fl">🤖 API Key de Google (análisis de imágenes — GRATIS)</label>
+      <input class="fi" type="password" id="cfg-apikey" value="${esc(S.settings.googleApiKey)}" placeholder="AIzaSy...">
+      <div class="api-hint"><strong style="color:#15803d">¡100% gratuito!</strong> Conseguila en <strong>aistudio.google.com</strong><br>Pasos: entrá → "Get API key" → "Create API key" → copiá y pegá acá.</div>
+    </div>
+    <div class="fg"><label class="fl">🔔 Recordatorio de eventos (días antes)</label>
+      <input class="fi" type="number" id="cfg-reminder" value="${S.settings.reminderDays||3}" min="0" max="30" placeholder="3">
+      <div class="api-hint">Te avisa cuántos días antes del evento. Se muestra al abrir la app. Necesita permiso de notificaciones del navegador.</div>
+    </div>
+    <div class="info-box">💡 <strong>¿Cómo compartir con otras mamás?</strong><br>Usá el botón <em>"📄 Página compartible"</em> en cada evento. Se descarga un archivo HTML que podés enviar por WhatsApp, mail o Drive. Cualquiera lo abre en su navegador.</div>
+    <div style="display:flex;gap:9px;margin-top:6px">
+      <button class="btn btn-ghost" id="cfg-cancel" style="flex:1">Cancelar</button>
+      <button class="btn btn-purple" id="cfg-save" style="flex:2">💾 Guardar</button>
+    </div>`;
+  openModal();
+  // local copy of children
+  let localChildren = ch.map(c=>({...c}));
+  const reRenderChildren=()=>{
+    document.getElementById('cfg-children').innerHTML=localChildren.map(c=>`<div class="fchk-item"><span style="font-size:1rem">👶</span><span style="flex:1;font-size:.85rem;font-weight:600">${esc(c.name)}</span><button class="chk-del" data-cfg-del="${c.id}">✕</button></div>`).join('');
+    document.getElementById('cfg-children').onclick=e=>{
+      if(e.target.dataset.cfgDel){localChildren=localChildren.filter(c=>c.id!==e.target.dataset.cfgDel);reRenderChildren();}
+    };
+  };
+  reRenderChildren();
+  document.getElementById('cfg-add-child').onclick=()=>{
+    const inp=document.getElementById('cfg-new-child');
+    const name=inp.value.trim();if(!name)return;
+    localChildren.push({id:uid(),name});inp.value='';reRenderChildren();
+  };
+  document.getElementById('cfg-new-child').onkeydown=e=>{if(e.key==='Enter')document.getElementById('cfg-add-child').click();};
+  document.getElementById('cfg-save').onclick=()=>{
+    S.settings.myName=document.getElementById('cfg-name').value.trim();
+    S.settings.myPhone=document.getElementById('cfg-phone').value.trim();
+    S.settings.googleApiKey=document.getElementById('cfg-apikey').value.trim();
+    S.settings.reminderDays=parseInt(document.getElementById('cfg-reminder').value)||3;
+    S.settings.children=localChildren;
+    persist();closeModal();render();
+  };
+  document.getElementById('cfg-cancel').onclick=closeModal;
+  document.getElementById('modal').onclick=e=>{if(e.target===document.getElementById('modal'))closeModal();};
+};
+
+const showWAModal = evId => {
+  const ev=S.events.find(e=>e.id===evId); if(!ev) return;
+  const msg=genWAMessage(ev);
+  document.getElementById('modal-inner').innerHTML=`
+    <div class="modal-handle"></div>
+    <div class="modal-title">📤 Mensaje para WhatsApp</div>
+    ${!S.settings.myPhone?'<div class="info-box">💡 Para incluir botones de confirmación, agregá tu número de WhatsApp en ⚙️ Configuración.</div>':''}
+    <div class="wa-box">${esc(msg)}</div>
+    <button class="copy-btn" id="wa-copy">📋 Copiar mensaje</button>
+    <div style="font-size:.72rem;color:#9ca3af;text-align:center;margin-bottom:12px;line-height:1.5">Pegá este mensaje en tu grupo de WhatsApp.<br>Las mamás confirman tocando el link de ✅ o ❌.</div>
+    <button class="btn btn-ghost" id="wa-close" style="width:100%">Cerrar</button>`;
+  openModal();
+  document.getElementById('wa-copy').onclick=function(){
+    navigator.clipboard.writeText(msg).then(()=>{this.textContent='✅ ¡Copiado!';this.style.background='#15803d';setTimeout(()=>{this.textContent='📋 Copiar mensaje';this.style.background='';},2500);});
+  };
+  document.getElementById('wa-close').onclick=closeModal;
+  document.getElementById('modal').onclick=e=>{if(e.target===document.getElementById('modal'))closeModal();};
+};
+
+/* ════════════════════════════════════════
+   REMINDERS
+════════════════════════════════════════ */
+const checkReminders = () => {
+  if (!('Notification' in window)) return;
+  const days = parseInt(S.settings.reminderDays);
+  if (isNaN(days) || days < 0) return;
+  const soon = S.events.filter(ev => {
+    const d = daysUntil(ev.date);
+    return d !== null && d >= 0 && d <= days;
+  });
+  if (!soon.length) return;
+  const doNotify = () => {
+    soon.forEach(ev => {
+      const d = daysUntil(ev.date);
+      const when = d === 0 ? '¡Es hoy!' : d === 1 ? 'Es mañana' : `Faltan ${d} días`;
+      try {
+        new Notification('🎉 ' + ev.title, {
+          body: (ev.childName ? 'Para ' + ev.childName + '. ' : '') + when,
+          tag: 'agfam-' + ev.id
+        });
+      } catch(e) {}
+    });
+  };
+  if (Notification.permission === 'granted') {
+    doNotify();
+  } else if (Notification.permission !== 'denied') {
+    Notification.requestPermission().then(p => { if (p === 'granted') doNotify(); });
+  }
+};
+
+/* ════════════════════════════════════════
+   EVENT DELEGATION + INIT
+════════════════════════════════════════ */
+function initApp() {
+  try { hydrate(); } catch(e) { console.error('hydrate error', e); }
+  try { render(); } catch(e) {
+    console.error('render error', e);
+    var el = document.getElementById('app');
+    if (el) el.innerHTML = '<div style="padding:24px;color:#b91c1c;font-size:.85rem;line-height:1.7;background:#fef2f2;border-radius:12px;margin:20px"><strong>⚠️ Error al mostrar la app</strong><br><br>' + e.message + '</div>';
+  }
+  try { checkReminders(); } catch(e) { console.error('reminder error', e); }
+
+document.getElementById('app').addEventListener('click', e => {
+  const t = e.target;
+  // tabs
+  const tab = t.closest('[data-tab]');
+  if(tab){S.tab=tab.dataset.tab;render();return;}
+  // settings
+  if(t.id==='btn-settings'){showSettingsModal();return;}
+  // expand card
+  const exp=t.closest('[data-expand]');
+  if(exp){const id=exp.dataset.expand;S.expanded.has(id)?S.expanded.delete(id):S.expanded.add(id);S.rsvpOpen=null;render();return;}
+  // delete event
+  const de=t.closest('[data-del-event]');
+  if(de&&confirm('¿Eliminar este evento?')){S.events=S.events.filter(ev=>ev.id!==de.dataset.delEvent);S.expanded.delete(de.dataset.delEvent);persist();render();return;}
+  // delete task
+  const dt=t.closest('[data-del-task]');
+  if(dt&&confirm('¿Eliminar esta tarea?')){S.tasks=S.tasks.filter(tk=>tk.id!==dt.dataset.delTask);persist();render();return;}
+  // toggle checklist
+  const tc=t.closest('[data-toggle-chk]');
+  if(tc&&t.tagName!=='INPUT'){const[evId,itemId]=tc.dataset.toggleChk.split('|');const ev=S.events.find(x=>x.id===evId);if(ev){ev.checklist=ev.checklist.map(i=>i.id===itemId?{...i,checked:!i.checked}:i);persist();render();}return;}
+  // rsvp open
+  const ro=t.closest('[data-rsvp-open]');
+  if(ro){S.rsvpOpen=ro.dataset.rsvpOpen;S.rsvpAttending[ro.dataset.rsvpOpen]='yes';render();return;}
+  // rsvp attending toggle
+  const ra=t.closest('[data-rsvp-att]');
+  if(ra){const[evId,att]=ra.dataset.rsvpAtt.split('|');S.rsvpAttending[evId]=att;render();return;}
+  // rsvp cancel
+  if(t.closest('[data-rsvp-cancel]')){S.rsvpOpen=null;render();return;}
+  // rsvp save
+  const rs=t.closest('[data-rsvp-save]');
+  if(rs){
+    const evId=rs.dataset.rsvpSave;
+    const ev=S.events.find(x=>x.id===evId);
+    if(ev){
+      const cn=document.getElementById(`rsvp-child-${evId}`)?.value?.trim();
+      if(!cn){alert('Ingresá el nombre del hijo/a');return;}
+      ev.rsvpList=[...(ev.rsvpList||[]),{id:uid(),childName:cn,parentName:document.getElementById(`rsvp-parent-${evId}`)?.value?.trim()||'',attending:S.rsvpAttending[evId]||'yes',addedAt:new Date().toISOString()}];
+      S.rsvpOpen=null;persist();render();
+    }return;
+  }
+  // rsvp delete
+  const rd=t.closest('[data-del-rsvp]');
+  if(rd){const[evId,rId]=rd.dataset.delRsvp.split('|');const ev=S.events.find(x=>x.id===evId);if(ev){ev.rsvpList=(ev.rsvpList||[]).filter(r=>r.id!==rId);persist();render();}return;}
+  // wa modal
+  const wm=t.closest('[data-wa-msg]');
+  if(wm){showWAModal(wm.dataset.waMsg);return;}
+  // share page
+  const sp=t.closest('[data-share-page]');
+  if(sp){const ev=S.events.find(x=>x.id===sp.dataset.sharePage);if(ev)downloadEventPage(ev);return;}
+  // ics
+  const ic=t.closest('[data-ics]');
+  if(ic){const ev=S.events.find(x=>x.id===ic.dataset.ics);if(ev)downloadICS(ev);return;}
+  // lightbox
+  const lbx=t.closest('[data-lbx]');
+  if(lbx){document.getElementById('lbx-img').src=lbx.dataset.lbx;document.getElementById('lightbox').classList.add('open');return;}
+});
+
+document.getElementById('app').addEventListener('change', e => {
+  const t=e.target;
+  // checklist checkbox
+  if(t.dataset.chk){const[evId,itemId]=t.dataset.chk.split('|');const ev=S.events.find(x=>x.id===evId);if(ev){ev.checklist=ev.checklist.map(i=>i.id===itemId?{...i,checked:t.checked}:i);persist();render();}return;}
+  // task checkbox
+  if(t.dataset.taskCheck){const tk=S.tasks.find(x=>x.id===t.dataset.taskCheck);if(tk){tk.completed=t.checked;persist();render();}return;}
+});
+
+document.getElementById('fab-area').addEventListener('click', e => {
+  if(e.target.id==='fab-main'){S.fabOpen=!S.fabOpen;render();return;}
+  if(e.target.id==='fab-bd'){S.fabOpen=false;render();return;}
+  if(e.target.id==='btn-add-event'){S.fabOpen=false;render();showAddEventModal();return;}
+  if(e.target.id==='btn-add-task'){S.fabOpen=false;render();showAddTaskModal();return;}
+});
+
+// lightbox close
+document.getElementById('lbx-close').onclick=()=>document.getElementById('lightbox').classList.remove('open');
+document.getElementById('lightbox').onclick=e=>{if(e.target===document.getElementById('lightbox'))document.getElementById('lightbox').classList.remove('open');};
+
+} // end initApp
+
+// Llamar initApp cuando el DOM esté listo — funciona en Safari file:// también
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initApp);
+} else {
+  // DOMContentLoaded ya disparó (o el script está al final del body)
+  initApp();
+}
+</script>
+</body>
+</html>
